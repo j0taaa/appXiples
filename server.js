@@ -66,6 +66,34 @@ app.post('/api/categories', async (req, res) => {
   res.json({ id, name, color });
 });
 
+// Update category (partial)
+app.patch('/api/categories/:id', async (req, res) => {
+  const { name, color } = req.body;
+  const fields = [];
+  const args = [];
+  if (name !== undefined) {
+    fields.push('name = ?');
+    args.push(name);
+  }
+  if (color !== undefined) {
+    fields.push('color = ?');
+    args.push(color);
+  }
+  if (fields.length === 0) return res.status(400).json({ error: 'no fields to update' });
+  args.push(req.params.id);
+  await db.execute({ sql: `UPDATE categories SET ${fields.join(', ')} WHERE id = ?`, args });
+  const result = await db.execute({ sql: 'SELECT * FROM categories WHERE id = ? LIMIT 1', args: [req.params.id] });
+  res.json(result.rows[0] || null);
+});
+
+// Delete category (also remove its expenses)
+app.delete('/api/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  await db.execute({ sql: 'DELETE FROM expenses WHERE category_id = ?', args: [id] });
+  await db.execute({ sql: 'DELETE FROM categories WHERE id = ?', args: [id] });
+  res.status(204).end();
+});
+
 app.get('/api/expenses', async (req, res) => {
   const { categoryId, limit } = req.query;
   let sql = 'SELECT * FROM expenses';
@@ -92,6 +120,33 @@ app.post('/api/expenses', async (req, res) => {
     args: [id, categoryId, amount, name]
   });
   res.json({ id, categoryId, amount, name });
+});
+
+// Get single expense
+app.get('/api/expenses/:id', async (req, res) => {
+  const result = await db.execute({ sql: 'SELECT * FROM expenses WHERE id = ? LIMIT 1', args: [req.params.id] });
+  res.json(result.rows[0] || null);
+});
+
+// Update expense (partial)
+app.patch('/api/expenses/:id', async (req, res) => {
+  const { categoryId, amount, name } = req.body;
+  const fields = [];
+  const args = [];
+  if (categoryId !== undefined) { fields.push('category_id = ?'); args.push(categoryId); }
+  if (amount !== undefined) { fields.push('amount = ?'); args.push(amount); }
+  if (name !== undefined) { fields.push('name = ?'); args.push(name); }
+  if (fields.length === 0) return res.status(400).json({ error: 'no fields to update' });
+  args.push(req.params.id);
+  await db.execute({ sql: `UPDATE expenses SET ${fields.join(', ')} WHERE id = ?`, args });
+  const result = await db.execute({ sql: 'SELECT * FROM expenses WHERE id = ? LIMIT 1', args: [req.params.id] });
+  res.json(result.rows[0] || null);
+});
+
+// Delete expense
+app.delete('/api/expenses/:id', async (req, res) => {
+  await db.execute({ sql: 'DELETE FROM expenses WHERE id = ?', args: [req.params.id] });
+  res.status(204).end();
 });
 
 // Monthly totals across all expenses

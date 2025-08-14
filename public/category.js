@@ -1,5 +1,8 @@
 async function fetchJSON(url, options) {
   const res = await fetch(url, options);
+  if (res.status === 204) return null;
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) return null;
   return res.json();
 }
 
@@ -31,9 +34,24 @@ async function loadExpenses() {
     const left = document.createElement('div');
     left.className = 'text-sm text-slate-700';
     left.textContent = `${date}${e.name ? ' • ' + e.name : ''}`;
+    const amountEl = document.createElement('div');
+    amountEl.className = 'text-sm font-semibold text-slate-900';
+    amountEl.textContent = `$${e.amount}`;
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'ml-3 inline-flex items-center justify-center rounded-md bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1 border border-red-200';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', async () => {
+      const ok = confirm('Delete this expense?');
+      if (!ok) return;
+      await fetch(`/api/expenses/${e.id}`, { method: 'DELETE' });
+      await loadExpenses();
+      await loadChart();
+    });
     const right = document.createElement('div');
-    right.className = 'text-sm font-semibold text-slate-900';
-    right.textContent = `$${e.amount}`;
+    right.className = 'flex items-center';
+    right.appendChild(amountEl);
+    right.appendChild(delBtn);
     li.appendChild(left);
     li.appendChild(right);
     list.appendChild(li);

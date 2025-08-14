@@ -112,13 +112,20 @@ app.get('/api/expenses', async (req, res) => {
 });
 
 app.post('/api/expenses', async (req, res) => {
-  const { categoryId, amount, name } = req.body;
+  const { categoryId, amount, name, createdAt } = req.body;
   if (!categoryId || amount === undefined) return res.status(400).json({ error: 'categoryId and amount required' });
   const id = uuidv4();
-  await db.execute({
-    sql: 'INSERT INTO expenses (id, category_id, amount, name) VALUES (?,?,?,?)',
-    args: [id, categoryId, amount, name]
-  });
+  if (createdAt) {
+    await db.execute({
+      sql: 'INSERT INTO expenses (id, category_id, amount, name, created_at) VALUES (?,?,?,?, datetime(?))',
+      args: [id, categoryId, amount, name, createdAt]
+    });
+  } else {
+    await db.execute({
+      sql: 'INSERT INTO expenses (id, category_id, amount, name) VALUES (?,?,?,?)',
+      args: [id, categoryId, amount, name]
+    });
+  }
   res.json({ id, categoryId, amount, name });
 });
 
@@ -130,12 +137,13 @@ app.get('/api/expenses/:id', async (req, res) => {
 
 // Update expense (partial)
 app.patch('/api/expenses/:id', async (req, res) => {
-  const { categoryId, amount, name } = req.body;
+  const { categoryId, amount, name, createdAt } = req.body;
   const fields = [];
   const args = [];
   if (categoryId !== undefined) { fields.push('category_id = ?'); args.push(categoryId); }
   if (amount !== undefined) { fields.push('amount = ?'); args.push(amount); }
   if (name !== undefined) { fields.push('name = ?'); args.push(name); }
+  if (createdAt !== undefined) { fields.push('created_at = datetime(?)'); args.push(createdAt); }
   if (fields.length === 0) return res.status(400).json({ error: 'no fields to update' });
   args.push(req.params.id);
   await db.execute({ sql: `UPDATE expenses SET ${fields.join(', ')} WHERE id = ?`, args });

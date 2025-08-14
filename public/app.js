@@ -116,6 +116,20 @@ async function loadCategoryChart() {
   });
 }
 
+function setDefaultExpenseDate() {
+  const input = document.getElementById('exp-date');
+  if (!input) return;
+  const now = new Date();
+  const ymd = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  input.value = ymd;
+  input.max = ymd;
+}
+
+function getTodayYMD() {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+
 document.getElementById('category-form').addEventListener('submit', async e => {
   e.preventDefault();
   const name = document.getElementById('cat-name').value;
@@ -135,12 +149,17 @@ document.getElementById('expense-form').addEventListener('submit', async e => {
   const amount = parseFloat(document.getElementById('exp-amount').value);
   const name = document.getElementById('exp-name').value;
   const categoryId = document.getElementById('exp-category').value;
+  const selectedDate = document.getElementById('exp-date').value;
+  const payload = { amount, name, categoryId };
+  const today = getTodayYMD();
+  if (selectedDate && selectedDate !== today) payload.createdAt = selectedDate;
   await fetchJSON('/api/expenses', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, name, categoryId })
+    body: JSON.stringify(payload)
   });
   e.target.reset();
+  setDefaultExpenseDate();
   await loadExpenses();
   await loadMonthlyChart();
   await loadCategoryChart();
@@ -154,3 +173,4 @@ loadCategories();
 loadExpenses();
 loadMonthlyChart();
 loadCategoryChart();
+setDefaultExpenseDate();

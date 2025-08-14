@@ -1,5 +1,12 @@
 const CACHE_NAME = 'expense-cache-v1';
-const ASSETS = ['/', '/index.html', '/app.js', '/manifest.json'];
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/app.js',
+  '/category.html',
+  '/category.js',
+  '/manifest.json'
+];
 
 self.addEventListener('install', event => {
   event.waitUntil(

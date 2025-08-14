@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <title>Category</title>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header id="cat-title" class="bg-blue-600 text-white p-4 text-center text-xl font-semibold">Category</header>
+  <main class="p-4 space-y-8">
+    <section class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-medium mb-2">Recent Expenses</h2>
+      <ul id="expense-list" class="space-y-1"></ul>
+    </section>
+    <section class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-medium mb-2">Last Months</h2>
+      <canvas id="catMonthlyChart"></canvas>
+    </section>
+  </main>
+  <script src="/category.js"></script>
+</body>
+</html>

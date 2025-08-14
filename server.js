@@ -2,15 +2,21 @@ const express = require('express');
 const path = require('path');
 const { createClient } = require('@libsql/client');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Initialize Turso SQLite client
-const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+// Initialize database client (Turso remote if configured, otherwise local file)
+const databaseUrl = process.env.TURSO_DATABASE_URL || 'file:local.db';
+const databaseAuthToken = process.env.TURSO_AUTH_TOKEN;
+
+const clientConfig = databaseUrl.startsWith('file:')
+  ? { url: databaseUrl }
+  : (databaseAuthToken ? { url: databaseUrl, authToken: databaseAuthToken } : { url: databaseUrl });
+
+const db = createClient(clientConfig);
+console.log(`Using database URL: ${databaseUrl}`);
 
 async function init() {
   await db.execute(`CREATE TABLE IF NOT EXISTS categories (

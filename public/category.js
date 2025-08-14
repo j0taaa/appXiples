@@ -27,7 +27,15 @@ async function loadExpenses() {
   expenses.forEach(e => {
     const li = document.createElement('li');
     const date = new Date(e.created_at).toLocaleDateString();
-    li.textContent = `${date} - $${e.amount}${e.name ? ' - ' + e.name : ''}`;
+    li.className = 'flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm';
+    const left = document.createElement('div');
+    left.className = 'text-sm text-slate-700';
+    left.textContent = `${date}${e.name ? ' • ' + e.name : ''}`;
+    const right = document.createElement('div');
+    right.className = 'text-sm font-semibold text-slate-900';
+    right.textContent = `$${e.amount}`;
+    li.appendChild(left);
+    li.appendChild(right);
     list.appendChild(li);
   });
 }
